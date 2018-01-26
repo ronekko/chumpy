@@ -1,12 +1,10 @@
-from ch import *
-from logic import *
+from chumpy.ch import *
+from chumpy.logic import *
 
-from optimization import minimize
-import extras
-import testing
-from version import version as __version__
-
-from version import version as __version__
+from chumpy.optimization import minimize
+import chumpy.extras
+import chumpy.testing
+from chumpy.version import version as __version__
 
 from numpy import bool, int, float, complex, object, unicode, str, nan, inf
 
@@ -36,7 +34,7 @@ import chumpy as ch
 [x1, x2, x3] = ch.array(10), ch.array(20), ch.array(30)
 for i in range(3): x2 = x1 + x2 + x3
 
-x2.dr_wrt(x1) # pull cache 
+x2.dr_wrt(x1) # pull cache
 x2.dr_wrt(x3) # pull cache
 x1.label='x1' # for clarity in show_tree()
 x2.label='x2' # for clarity in show_tree()
@@ -107,12 +105,12 @@ print y # should be all 0.5
 
 def demo(which=None):
     if which not in demos:
-        print 'Please indicate which demo you want, as follows:'
+        print('Please indicate which demo you want, as follows:')
         for key in demos:
-            print "\tdemo('%s')" % (key,)
+            print("\tdemo('%s')" % (key,))
         return
 
-    print '- - - - - - - - - - - <CODE> - - - - - - - - - - - -'
-    print demos[which]
-    print '- - - - - - - - - - - </CODE> - - - - - - - - - - - -\n'
+    print('- - - - - - - - - - - <CODE> - - - - - - - - - - - -')
+    print(demos[which])
+    print('- - - - - - - - - - - </CODE> - - - - - - - - - - - -\n')
     exec('global np\n' + demos[which], globals(), locals())

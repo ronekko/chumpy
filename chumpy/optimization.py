@@ -9,11 +9,11 @@ See LICENCE.txt for licensing and contact information.
 __all__ = ['minimize']
 
 import numpy as np
-import ch
+from chumpy import ch
 import scipy.sparse as sp
 import scipy.optimize
 
-from optimization_internal import minimize_dogleg
+from chumpy.optimization_internal import minimize_dogleg
 
 #from memory_profiler import profile, memory_usage
 
@@ -56,7 +56,7 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
         obj_scalar = obj
     else:
         obj_scalar = SumOfSquares(obj)
-    
+
         def hessp(vs, p,obj, obj_scalar, free_variables):
             changevars(vs,obj,obj_scalar,free_variables)
             if not hasattr(hessp, 'vs'):
@@ -69,7 +69,7 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
                 hessp.vs = vs
             return np.array(hessp.H.dot(p)).ravel()
             #return 2*np.array(hessp.J.T.dot(hessp.J.dot(p))).ravel()
-            
+
         if method.lower() != 'newton-cg':
             def hess(vs, obj, obj_scalar, free_variables):
                 changevars(vs,obj,obj_scalar,free_variables)
@@ -79,7 +79,7 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
                     J = ns_jacfunc(vs,obj,obj_scalar,free_variables)
                     hessp.H = 2. * J.T.dot(J)
                 return hessp.H
-        
+
     def changevars(vs, obj, obj_scalar, free_variables):
         cur = 0
         changed = False
@@ -91,13 +91,13 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
                 changed = True
 
             cur += sz
-            
+
         methods_without_callback = ('anneal', 'powell', 'cobyla', 'slsqp')
         if callback is not None and changed and method.lower() in methods_without_callback:
             callback(None)
 
         return changed
-    
+
     def residuals(vs,obj, obj_scalar, free_variables):
         changevars(vs, obj, obj_scalar, free_variables)
         residuals = obj_scalar.r.ravel()[0]
@@ -108,11 +108,11 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
             scalar_jacfunc.vs = vs*0+1e16
         if np.max(np.abs(vs-scalar_jacfunc.vs)) == 0:
             return scalar_jacfunc.J
-            
+
         changevars(vs, obj, obj_scalar, free_variables)
-        
+
         if True: # faster, at least on some problems
-            result = np.concatenate([np.array(obj_scalar.lop(wrt, np.array([[1]]))).ravel() for wrt in free_variables])            
+            result = np.concatenate([np.array(obj_scalar.lop(wrt, np.array([[1]]))).ravel() for wrt in free_variables])
         else:
             jacs = [obj_scalar.dr_wrt(wrt) for wrt in free_variables]
             for idx, jac in enumerate(jacs):
@@ -123,13 +123,13 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
         scalar_jacfunc.J = result
         scalar_jacfunc.vs = vs
         return result.ravel()
-        
+
     def ns_jacfunc(vs,obj, obj_scalar, free_variables):
         if not hasattr(ns_jacfunc, 'vs'):
             ns_jacfunc.vs = vs*0+1e16
         if np.max(np.abs(vs-ns_jacfunc.vs)) == 0:
             return ns_jacfunc.J
-            
+
         changevars(vs, obj, obj_scalar, free_variables)
         jacs = [obj.dr_wrt(wrt) for wrt in free_variables]
         result = hstack(jacs)
@@ -138,7 +138,7 @@ def minimize(fun, x0, method='dogleg', bounds=None, constraints=(), tol=None, ca
         ns_jacfunc.vs = vs
         return result
 
-        
+
     x1 = scipy.optimize.minimize(
         method=method,
         fun=residuals,
